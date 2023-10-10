@@ -327,7 +327,24 @@ async function getPages(database_id) {
       }
     ]
   });
-  return resp.results;
+
+  let pages = resp.results;
+  while (resp.has_more) {
+    resp = await notion.databases.query({
+      database_id: database_id,
+      filter: filter,
+      sorts: [
+        {
+          timestamp: 'last_edited_time',
+          direction: 'ascending'
+        }
+      ],
+      start_cursor: resp.next_cursor
+    });
+    pages = pages.concat(resp.results);
+  }
+
+  return pages;
 }
 
 /**
