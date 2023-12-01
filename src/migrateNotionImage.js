@@ -18,7 +18,8 @@ const imageminPngquant = require("imagemin-pngquant");
 const imageminMozjpeg = require("imagemin-mozjpeg");
 const imageminGifsicle = require("imagemin-gifsicle");
 const imageminSvgo = require("imagemin-svgo");
-
+const fs = require('fs');
+const { count } = require("console");
 
 async function migrateNotionImageFromURL(ctx, url) {
   // 检查图片是否为notion的图片
@@ -52,6 +53,19 @@ async function migrateNotionImageFromURL(ctx, url) {
       imageItem = await compressPic(imageItem);
     }
     imageItem.fileName = `${uuid}.${ext}`;
+
+    // 如果有存储到本地需求，直接存储
+    
+    const filePath = `source/image/${imageItem.fileName}`; // ` 'source/image/'+imageItem.fileName 
+    fs.watchFile(filePath,imageItem.buffer,(err)=>{
+      if (err) {
+        console.error(err);
+        return;
+      }
+      console.log('文件已保存');
+    })
+    return "image/" + imageItem.fileName;
+
     // 上传图片
     const result = await ctx.upload([imageItem]);
     if (result && result[0] && result[0].imgUrl) {
